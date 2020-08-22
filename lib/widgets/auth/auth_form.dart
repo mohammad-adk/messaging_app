@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class AuthForm extends StatefulWidget {
   final void Function(
       String email, String username, String password, bool isLogin, BuildContext ctx) submitFN;
-  var isLoading;
+  final isLoading;
 
   AuthForm(this.submitFN, this.isLoading);
 
