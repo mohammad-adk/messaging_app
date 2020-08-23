@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:my_message/widgets/pickers/user_image_picker.dart';
 
 class AuthForm extends StatefulWidget {
   final void Function(
-      String email, String username, String password, bool isLogin, BuildContext ctx) submitFN;
+    String email,
+    String username,
+    String password,
+    File image,
+    bool isLogin,
+    BuildContext ctx,
+  ) submitFN;
   final isLoading;
 
   AuthForm(this.submitFN, this.isLoading);
@@ -17,19 +25,31 @@ class _AuthFormState extends State<AuthForm> {
   String _userEmail = '';
   String _userName = '';
   String _userPassword = '';
+  File _pickedImage;
+
+  void pickedImage(File image) {
+    _pickedImage = image;
+  }
 
   void _trySubmit() {
     final isValid = _formKey.currentState.validate();
     FocusScope.of(context).unfocus();
 
+    if (_pickedImage == null && !_isLogin) {
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text('Please pick an image.'),
+      ));
+      return;
+    }
+
     if (isValid) {
       _formKey.currentState.save();
-
       widget.submitFN(
         _userEmail.trim(),
         _userName.trim(),
         _userPassword.trim(),
-        _isLogin ,
+        _pickedImage,
+        _isLogin,
         context,
       );
     }
@@ -47,6 +67,7 @@ class _AuthFormState extends State<AuthForm> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (!_isLogin) UserImagePicker(pickedImage),
                 TextFormField(
                   key: ValueKey('email'),
                   validator: (value) {
@@ -95,25 +116,24 @@ class _AuthFormState extends State<AuthForm> {
                 SizedBox(
                   height: 12,
                 ),
-                if(widget.isLoading)
-                  CircularProgressIndicator(),
-                if(!widget.isLoading)
+                if (widget.isLoading) CircularProgressIndicator(),
+                if (!widget.isLoading)
                   RaisedButton(
-                  child: Text(_isLogin ? 'Login' : 'Sign Up'),
-                  onPressed: _trySubmit,
-                ),
-                if(!widget.isLoading)
+                    child: Text(_isLogin ? 'Login' : 'Sign Up'),
+                    onPressed: _trySubmit,
+                  ),
+                if (!widget.isLoading)
                   FlatButton(
-                  textColor: Theme.of(context).primaryColor,
-                  child: Text(_isLogin
-                      ? 'Create new account'
-                      : 'I already have an account'),
-                  onPressed: () {
-                    setState(() {
-                      _isLogin = !_isLogin;
-                    });
-                  },
-                )
+                    textColor: Theme.of(context).primaryColor,
+                    child: Text(_isLogin
+                        ? 'Create new account'
+                        : 'I already have an account'),
+                    onPressed: () {
+                      setState(() {
+                        _isLogin = !_isLogin;
+                      });
+                    },
+                  )
               ],
             ),
           ),
